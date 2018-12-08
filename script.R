@@ -10,13 +10,16 @@ if (user == "rutgerpoldermans"){
 }
 
 # Import data
-traindata <- read.csv("train.csv")
-testdata <- read.csv("test.csv")
+df <- read.csv("train.csv")
+compdata <- read.csv("test.csv")
 
 
-# Take sample
-sample_size <- 1000
-traindata <- traindata[sample(1:dim(traindata)[1],sample_size,replace=F), ]
+# Take trainingset and testset
+sample_size <- 10000
+df <- df[sample(1:dim(df)[1],sample_size,replace=F), ]
+index <- sample(1:sample_size,floor(0.8*sample_size),replace=F)
+testdata <- df[-index,]
+traindata <- df[index,]
 
 traindata$zero <- (traindata$label == 0)
 namesX <- colnames(traindata)
@@ -34,3 +37,11 @@ traindata$probs <- probs
 if (user == "rutgerpoldermans"){
 hist((exp(fitted)/(1+exp(fitted))))
 }
+
+# Logit requires 10 different models
+# Alternative: neural network
+library(neuralnet)
+set.seed(99999999)
+NN = neuralnet(as.formula(paste("label ~ ", namesX, sep = "")), data = traindata, hidden = 3 , linear.output = T )
+traindata$NN <- NN$response
+head(traindata[,c("label","NN")])
